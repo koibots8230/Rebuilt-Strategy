@@ -278,11 +278,11 @@ driveTimes = {
 }
 
 
-pickupAction = Action(0, 0.5, 0.1, Position.MIDDLE)
+pickupAction = Action(0, 0.25, 0.1, Position.MIDDLE)
 
 pickupDepot = Action(0, 0.2, 0.05, Position.DEPOT)
 
-startupShooter = Action(0, 1.5, 0.2, None)
+startupShooter = Action(0, 1, 0.2, None)
 
 fullAutoActions = {
     "Shoot": Action(1, 0.425, 0.05, Position.SCORE),

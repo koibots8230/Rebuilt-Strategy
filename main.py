@@ -5,19 +5,22 @@ import random
 import copy
 import sys
 import seaborn as sns
-capacity = 8
+capacity = 20
 def simulate_game():
 
     redPointsLog = []
     bluePointsLog = []
     times = []
+    middleBallsLog = []
+    redBallsLog = []
+    blueBallsLog = []
 
     robots = [
         Robot(
     [fullAutoActions["Shoot"], pickupAction],
-    True,
+    False,
     [fullTeleopActions["Shoot"], fullTeleopActions["ShootToSide"], pickupAction],
-    [fullEndgameActions["Climb L1"], fullEndgameActions["Climb L2"], fullEndgameActions["Climb L3"]],
+    [fullEndgameActions["Nothing"]],
     capacity,
     True,
     False,
@@ -27,9 +30,9 @@ def simulate_game():
 ),
 Robot(
     [fullAutoActions["Shoot"], pickupAction],
-    True,
+    False,
     [fullTeleopActions["Shoot"], fullTeleopActions["ShootToSide"], pickupAction],
-    [fullEndgameActions["Climb L1"], fullEndgameActions["Climb L2"], fullEndgameActions["Climb L3"]],
+    [fullEndgameActions["Nothing"]],
     capacity,
     True,
     False,
@@ -190,14 +193,23 @@ Robot(
             #print(f"Current bot stores: {bot.storage}")
             action = bot.teleopSample(field)
 
+        times.append(bot.time)
+        actionTime = action.get_time(bot.storage)
+        if actionTime == -1:
+            continue
+        bot.time += actionTime
+
         if bot.alliance == Alliance.BLUE:
             bluePoints += action.points
         else:
             redPoints += action.points
         bluePointsLog.append(bluePoints)
         redPointsLog.append(redPoints)
-        times.append(bot.time)
-        bot.time += action.get_time(bot.storage)
+
+        middleBallsLog.append(field.fuel_middle)
+        redBallsLog.append(field.fuel_red)
+        blueBallsLog.append(field.fuel_blue)
+        
         #print(f"Field middle: {field.fuel_middle}, blue home: {field.fuel_blue}, red home: {field.fuel_red}")
         #print(f"blue: {bluePoints}, red: {redPoints}")
         #print("--------------------------------------")
@@ -236,27 +248,31 @@ Robot(
     #         else:
     #             print("Not enough time to complete action!")
     #             break
-    #return (bluePointsLog, redPointsLog, times)
-    return (bluePoints, redPoints)
+    return (middleBallsLog, blueBallsLog, redBallsLog, times)
+    #return (bluePoints, redPoints)
 
 results = simulate_game()
 
-# plt.plot(results[2], results[0], color="blue")
-# plt.plot(results[2], results[1], color="red")
+plt.plot(results[3], results[0], color="purple")
+plt.plot(results[3], results[1], color="blue")
+plt.plot(results[3], results[2], color="red")
 
-# plt.axvline(20)
-# plt.axvline(30)
-# plt.axvline(55)
-# plt.axvline(80)
-# plt.axvline(105)
-# plt.axvline(130)
+plt.xlabel("Time (s)")
+plt.ylabel("# of Fuel in Zone")
 
-# plt.savefig("mostrecentrun.png")
-# plt.show()
+plt.axvline(20)
+plt.axvline(30)
+plt.axvline(55)
+plt.axvline(80)
+plt.axvline(105)
+plt.axvline(130)
+plt.tight_layout()
+plt.savefig("mostrecentrun.png")
+plt.show()
 
-fig, axs = plt.subplots(1, 2, figsize=(15,5))
-print("Running...")
-results = [simulate_game() for _ in range(500)]
+# fig, axs = plt.subplots(1, 2, figsize=(15,5))
+# print("Running...")
+# results = [simulate_game() for _ in range(500)]
 
 # totals = []
 
@@ -286,10 +302,17 @@ results = [simulate_game() for _ in range(500)]
 # plt.ylabel("# of Wins")
 # plt.savefig("mostrecent.png")
 # plt.show()
-for i, (data, ax) in enumerate(zip(list(map(list, zip(*results))), axs)):
-    sns.histplot(data = data, kde=True, ax=ax)
-print("Done")
+# a = 0
+# for i, (data, ax) in enumerate(zip(list(map(list, zip(*results))), axs)):
+#     sns.histplot(data = data, kde=True, ax=ax)
+#     if a == 0:
+#         ax.set_xlabel("Points - Can Climb L3")
+#     else:
+#         ax.set_xlabel("Points - Can Climb L1")
+#     ax.set_ylabel("# of Games")
+#     a += 1
+# print("Done")
 
-plt.tight_layout()
-plt.savefig("mostrecent.png")
-plt.show()
+# plt.tight_layout()
+# plt.savefig("mostrecent.png")
+# plt.show()
